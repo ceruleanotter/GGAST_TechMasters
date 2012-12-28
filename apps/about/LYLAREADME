@@ -1,0 +1,1 @@
+You need to run a migration, not sync db if you change the models

@@ -4,6 +4,22 @@
 import os.path
 import posixpath
 
+
+#swingtime settings
+import sys
+try:
+    # dateutil is an absolute requirement
+    import dateutil
+except ImportError:
+    raise ImportError(
+        'django-swingtime requires the "dateutil" package '
+        '(http://labix.org/python-dateutil)'
+    )
+
+SWINGTIME_SETTINGS_MODULE = 'swingtime_settings'
+
+#end of swingtime settings
+
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
@@ -135,6 +151,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     
     "notification.context_processors.notification",
     "announcements.context_processors.site_wide_announcements",
+    'swingtime.context_processors.current_datetime',
 ]
 
 INSTALLED_APPS = [
@@ -176,6 +193,8 @@ INSTALLED_APPS = [
 
     #Lyla Apps
     "south",
+    "swingtime",
+    "studentmonapp"
 
 ]
 
@@ -222,3 +241,13 @@ try:
     from local_settings import *
 except ImportError:
     pass
+
+#from swingtime
+
+try:
+    import django_extensions
+except ImportError:
+    pass
+else:
+    INSTALLED_APPS += ('django_extensions',)
+#end of from swingtime
