@@ -1,10 +1,20 @@
 from django.db import models
-from swingtime.models import Occurrence
+from swingtime.models import Occurrence, OccurrenceManager, Event
 from profiles.models import Profile 
+from dateutil import rrule
+from django.core.urlresolvers import reverse
+from datetime import datetime
+from django.conf import settings
 # Create your models here.
 class MonitorReport(Occurrence):
     """
     """
+    FUTUREEVENT = 'FE'
+    ONTIME  = 'OK'
+    COVERED = 'CO'
+    LATE = 'LT'
+    MISSED = 'MS'
+
     STATUS_CHOICES = (
         ('FE', 'Future Event'),
         ('OK', 'Signed in on time'),
@@ -13,19 +23,56 @@ class MonitorReport(Occurrence):
         ('MS', 'Monitor missed hours')
         )
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,default=STATUS_CHOICES[0][0])
-    signed_time = models.DateTimeField('Date Signed In',null=True)
-    user = models.ForeignKey(Profile)
+    signed_time = models.DateTimeField('Date Signed In',null=True, blank=True, default=None)
+    user = models.ForeignKey(Profile, null=True, blank=True, default=None,related_name='reports')
     cover_reason = models.TextField(max_length=250)
-    
+    #getting the manager from the superclass
+    objects = OccurrenceManager()
+
+
     def get_responsible_monitor(self):
         return self.event_type.profile
+
+    def is_on_time_now (self, currenttime):
+
+        print "IS ON TIME: called with %s" % (currenttime)
+        
+        late_enough = (currenttime > (self.end_time - settings.STUDENTM_SIGNIN_BEFORE_DELTA))
+        print "IS ON TIME: late enough: %s" % (late_enough)
+        
+        on_time =  ((currenttime < (self.end_time + settings.STUDENTM_SIGNIN_AFTER_DELTA)) and late_enough)
+        
+        print "IS ON TIME: on_time: %s" % (on_time)
+        
+        return on_time, late_enough
+
+    def is_not_attempting_cover(self, profile):
+        return (self.get_responsible_monitor() == profile)
+
+    def can_report(self, profile, currenttime):
+        #three cases
+        #the person is the right person and they are signing in on time
+        #the person is right but signing in late
+        #the time is right and another person is covering
+        #first going to check the time
+        print "CAN REPORT: called"
+        if not(self.status == self.FUTUREEVENT or self.status == self.MISSED):
+            print "CAN_REPORT: not a future event or missed"
+            return False
+        timeOK, lateEnough = self.is_on_time_now(currenttime)
+        
+        personOK = self.is_not_attempting_cover(profile)
+        
+        return (timeOK or (personOK and lateEnough)) 
+
     def __unicode__(self):
-        mon = self.get_responsible_monitor(self)
+        mon = self.get_responsible_monitor()
         coverstring = mon.name
-        if (self.status == self.STATUS_CHOICES['CO']):
+        if (self.status ==  self.COVERED):
             coverstring = "%s covered for %s" % (self.user.name, mon.name)
 
         return "%s, STATUS: %s, MONITOR %s," % (self.start_time.date(), self.status, coverstring)
+
 
 class MonitorIssue(models.Model):
     SEVERITY_CHOICES = (
@@ -51,5 +98,41 @@ class MonitorIssue(models.Model):
         """
         """
         return "%s, SOLVED? %s" % (self.description, self.solved)
+
+# proxy class for event type to override add event
+class MonitorEvent(Event):
+    class Meta:
+        proxy = True
+
+    def get_absolute_url(self):
+        print "get absolute url in event was called"
+        return reverse('studentmonapp.views.userhome', args=["lyla"])
+
+    def add_occurrences(self, start_time, end_time, **rrule_params):
+        #COPIED FROM SWINGTIME MODELS, EVENT, but occurence_Set.create changed to more explicit making of monitor reports.
+           '''
+        Add one or more occurences to the event using a comparable API to 
+        ``dateutil.rrule``. 
         
-    
+        If ``rrule_params`` does not contain a ``freq``, one will be defaulted
+        to ``rrule.DAILY``.
+        
+        Because ``rrule.rrule`` returns an iterator that can essentially be
+        unbounded, we need to slightly alter the expected behavior here in order
+        to enforce a finite number of occurrence creation.
+        
+        If both ``count`` and ``until`` entries are missing from ``rrule_params``,
+        only a single ``Occurrence`` instance will be created using the exact
+        ``start_time`` and ``end_time`` values.
+        '''
+           print "MonitorEvent: add_occurences called"
+           rrule_params.setdefault('freq', rrule.DAILY)
+           
+           if 'count' not in rrule_params and 'until' not in rrule_params:
+                mr = MonitorReport(start_time=start_time, end_time=end_time)
+                mr.save(force_insert=True)
+           else:
+                delta = end_time - start_time
+                for ev in rrule.rrule(dtstart=start_time, **rrule_params):
+                    mr = MonitorReport(event=self,start_time=ev, end_time=ev + delta)
+                    mr.save(force_insert=True)

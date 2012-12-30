@@ -1,0 +1,66 @@
+Ok, so let me work this out
+
+I've got a form and an event to render said form, you need to pass the two together to get them to work.  I've got Monitor Issuie, which is a sub class of nothing, and then Monitor Report, which is an occurence. 
+
+
+I need to look in to replacing the occurance from class with a Monitor Report form class, whether in the add_event if I do that that will work
+I will probably need to add my own form for monitor report generation, one which sets:
+
+status - Future Event
+date_signed - null (to be replaced later)
+user - null
+cover reason - blank
+
+I need to somehow edit the add_occurrences method in events to somehow
+
+I might need to go on and rewrite the add_event view to properly work with the form, but I hope to avoid that. I will need to tweak the templates, that's for sure.
+
+
+After I finish that, I should be able to start making monitor report occurances for my student monitors
+
+At that point, I want to get the views for the occurances working, it should have something that checks if the person is an admin, and then can delete it from the db if so. occurances aren't hooked to anything, so that's good, I just need to delete that. again, only allow if they are an admin. There's a view occurence, it shouldn't be permissible for users to change anything about the occurance. At first, just this static page
+
+
+now the view must check what state it is in, there are three:
+can't sign in
+can sign in
+Then I need to add the ability to sign in to occurence if it's status is (FE plus is in some range) or (Missed and the person)
+define the range in settings/ create a new setting specifically for the app and link it the same way swingtime settings are linked
+
+and if that is true, it will provide a form to the template, maybe the report should have the logic for returning whether it is possible to sign in... in that case it should probably also have the code for whether the cover_reason should be provided, ya...
+
+status - automatically pulled to either covered, late or on time:
+        covered needs to check the event type vs. the user signed in
+	late if the event is missed
+	on time if the event is future event
+
+date_signed - that date and time
+user - the current user signed in
+cover reason - check if the current user signed in is the same as the even user and have cover reason if so (need to be passed in to forms)
+
+
+
+create the user page which shows them which events they can sign in to.
+
+create a script which changes events to missed
+
+change the server time, it's set on american time or something and is wrong
+
+create an admin view showing each profile and the breakdown of missed/future/late/ontime/covered
+at first, let's just have a generic form for adding new issuies
+
+Extra todo:
+Modify the createuserschedule form so that:
+       remove month/year thing, only allow weekly scheduling
+       only allows hour long increments
+       auto generates the event name (profile_days_hours)
+       doesn't allow any hours that are shorter than 1 and longer than 3
+       maybe some constraints on the start/end date...
+
+
+Modify the event type field to make it mandetory for monitor reports:
+       ***extraCan we override the event type field to make it mandetory for monitor reports, we can make the main user mandetory and then that will pull an event type, but this should be for the event, we would need a monitor event or something... if that is not easy, I will construct a signal for saving of the first monitor occurence and make it mandetory or something, post or pre? I could also put something in the event_form to make it mandetory, let's do that
+
+Event.get_absolute_url is not working in the occurence view, I'm assuming it's a casting issue
+
+write tests to make sure all the timing is working

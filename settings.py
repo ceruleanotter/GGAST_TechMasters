@@ -251,3 +251,8 @@ except ImportError:
 else:
     INSTALLED_APPS += ('django_extensions',)
 #end of from swingtime
+
+#settings for studentmonapp
+import datetime
+STUDENTM_SIGNIN_BEFORE_DELTA = datetime.timedelta(minutes=10)
+STUDENTM_SIGNIN_AFTER_DELTA = datetime.timedelta(minutes=30)

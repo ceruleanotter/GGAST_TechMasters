@@ -1,0 +1,42 @@
+
+{% block title %}Event: {{ event }}{% endblock %}
+{% block main_content %}
+    <h3>Swingtime Event</h3>
+    <h4>Event Details</h4>
+    <div>
+      {{ event.title }}
+      <br/>
+      {{ event.event_type.profile }}
+      <br/>
+      {{ event.description }}
+      <br/>
+    </div>
+    <br/>
+    <h4>Notes</h4>
+    {% with event.notes.all as notes %}
+    {% if notes %}
+    <ul>
+        {% for note in notes %}
+        <li>{{ note }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>None</p>
+    {% endif %}
+    {% endwith %}
+
+    <h4>Occurrences</h4>
+    {% if event.occurrence_set.count %}
+    <ol>
+        {% for o in event.occurrence_set.all %}
+        <li>
+            <a href="url swingtime-occurrence event.id o.id">
+                {{ o.start_time|date:"l, F jS, Y P" }} &ndash; 
+                {{ o.end_time|date:"l, F jS, Y P" }}</a>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    {% endif %}
+    
+{% endblock %}
