@@ -13,11 +13,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db.models import Q
 
-def userhome(request, username):
+def userhome(request):
     #need some checks to redirect if not the right user
-    page_user = get_object_or_404(User, username=username)
-    if (request.user != page_user): return HttpResponse("Access Denied")
-    
+    #page_user = get_object_or_404(User, username=username)
+    #if (request.user != page_user): return HttpResponse("Access Denied")
+    page_user = request.user
     #things are fine, keep going
     profile = get_object_or_404(Profile, user=page_user)
     reported_issues = profile.monitorissue_set.all()

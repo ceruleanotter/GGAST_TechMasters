@@ -15,7 +15,7 @@ class Profile(ProfileBase):
     about = models.TextField(_("about"), null=True, blank=True)
     event_type = models.OneToOneField(EventType, null=True)
     def __unicode__(self):
-        return "Name: %s -- %s" % (self.name, self.about)
+        return "%s" % (self.name)
     def get_username(self):
         return self.user.username
         

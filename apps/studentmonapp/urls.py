@@ -4,7 +4,7 @@ from studentmonapp.models import MonitorEvent, MonitorIssue
 
 urlpatterns = patterns('studentmonapp.views',
                         (r'^admin/createuserschedule/$','createuserschedule'),
-                        (r'^user/(?P<username>[\w\._-]+)/$','userhome'),
+                       url(r'^user/$','userhome',name="userhome"),
                        url(r'^report/(?P<report_id>\d+)/$', 'monitor_report_detail', name='monitor_report_detail_view'),
                        url(r'^monitorhours/(?P<pk>\d+)/$',
                         DetailView.as_view( model=MonitorEvent,

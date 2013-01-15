@@ -8,24 +8,18 @@
 {% block body_class %}home{% endblock %}
 
 {% block banner %}
-    <h1>{% trans "Gashora Girls Computer Lab" %}</h1>
+    <h1>{% trans "GGAST Computer Lab" %}</h1>
     <p>
         {% blocktrans %}
-	  This is the Gashora Girls Academy of Science and Technology Computer Lab website. 
+	  Welcome to the Gashora Computer Lab homepage.
         {% endblocktrans %}
-    </p>
-    
-    <h2>Student Monitors</h2>
-    <p>
-        {% block trans %}
-        Student Monitors who have accounts can <a href="{{ what_next_url }}" class="btn primary large">Sign In</a>?{% endblocktrans %}
-	
-        {% endblock trans %}
     </p>
     
     {% if user.is_authenticated %}
         {% url what_next as what_next_url %}
-        <p class="what_next">{% blocktrans %}<a href="{{ what_next_url }}" class="btn primary large">What Next</a>?{% endblocktrans %}</p>
+	{% with user.get_profile as profile %}
+        <p class="what_next">{#{% blocktrans %}#}Hello {{ profile }}. You can go to your  <a href="{% url studentmonapp.views.userhome %}" class="btn primary large">homepage</a> now to sign in to your duty hours.{#{% endblocktrans %}#}</p>
+	{% endwith %}
     {% else %}
         {% url acct_login as login_url %}
         {% ifsetting ACCOUNT_OPEN_SIGNUP %}
@@ -35,4 +29,18 @@
             <p>{% blocktrans %}You can <a href="{{ login_url }}" class="btn primary large">Log In</a> to try out the site.{% endblocktrans %}</p>
         {% endifsetting %}
     {% endif %}
-{% endblock banner%}
+{% endblock %}
+
+{% block bottomrow %}
+  <div class="span10">
+    <h3>MONITOR CALENDAR COMING SOON</h3>
+  </div>
+  <div class="span2">
+    <h3>WIZARDS</h3>
+    <ul>
+      {% for profile in profiles %}
+	<li><a href="{{profile.get_absolute_url}}">{{profile}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock bottomrow %}
