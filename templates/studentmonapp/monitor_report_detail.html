@@ -1,38 +1,37 @@
+{% extends "banner_base.html" %}
 
-{% block title %} This is used {% endblock %}
-{% block main_content %}
-     <h3>Monitor Report</h3>
-     {% with occurrence.event as event %}
-     <h4>
-       "{{ event }}" " {{  occurrence.event }}"
-       <a href="{{ occurrence.event.get_absolute_url }}">{{ occurrence.title }}</a>
-     </h4>
-     {% endwith %}
-     <br/>
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Report for {{occurrence.start_time|date:"M. j P"}} - {{occurrence.end_time|date:"P"}}{% endblock %}
+
+{% block banner %}
+
      {% with occurrence.start_time as st  %}
        {% with occurrence.end_time as et %}
-         {{ st|date:"l, F jS P" }} - {{ et|date:"P" }}
-        
+     <h2>{{st|date:"l, F jS "}}</h2>
+     <h3>{{st|date:"P"}} - {{et|date:"P"}}</h3>
+     {% with occurrence.event as event %}
+     
+      {{event.event_type.profile}}'s Duty
+     <br/>
+     {% endwith %}
+     
+
 	{% endwith %}
 	{% endwith %}
 	<br/>
-	STATUS: {{ occurrence.get_status_display }}
 	
      <dl>
-         <dt>Event type:</dt>
-         <dd>{{ occurrence.event.event_type }}</dd>
-         
-         <dt>Description:</dt>
-         <dd>{{ occurrence.event.description|default:"None" }}</dd>
-         
+       <dt>Status:</dt> <dd>{{ occurrence.get_status_display }}</dd>
+	  
 	 {% if occurrence.status == occurrence.COVERED %}
          <dt>Cover Reason:</dt>
          <dd>{{ occurrence.cover_reason|default:"None" }}</dd>	   
 	 {% endif %}
-	 ISSUES
-	 <br/>
+	 <dt>Issues</dt>
 	 {% for i in occurrence.reports.all %}
-	 <dt>ISSUE</dt>
+	 <dt>{{i}}</dt>
 	 Severity: {{ i.get_severity_display }}
 	 <br/>
 	 Time Discovered : {{ i.time_discovered }}
@@ -51,25 +50,10 @@
 	 
 	 {% endfor %}
 
-         <dt>Note(s:)</dt>
-         <dd>
-             {% with occurrence.event.notes.all as notes %}
-             {% if notes %}
-             <ul>
-                 {% for note in notes %}
-                 <li>{{ note }}</li>
-                 {% endfor %}
-             </ul>
-             {% else %}None
-             {% endif %}
-             {% endwith %}
-         </dd>
+         
      </dl>
 
-     <br/>
-SOME REPORT STUFF:
-{{ can_report_data }}
-
+     
      {% if form %}
      <form action="" method="post">
        {% csrf_token %}
@@ -94,4 +78,4 @@ AND THE WONDERFUL INLINE ISSUE FORM
        You cannot sign for this report. You are signed in as {{ user.username }} and the time is {{ currenttime|date:"l, F jS P" }}
      {% endif %}
 
-{% endblock %}
+{% endblock banner %}

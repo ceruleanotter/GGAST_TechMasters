@@ -14,35 +14,49 @@ from django.conf import settings
 from django.db.models import Q
 
 def userhome(request):
-    #need some checks to redirect if not the right user
-    #page_user = get_object_or_404(User, username=username)
-    #if (request.user != page_user): return HttpResponse("Access Denied")
     page_user = request.user
-    #things are fine, keep going
     profile = get_object_or_404(Profile, user=page_user)
     reported_issues = profile.monitorissue_set.all()
     
-    upcoming_reports = MonitorReport.objects.daily_occurrences(dt=None) # grabs today only
-    upcoming_reports = upcoming_reports.filter(status__exact=MonitorReport.FUTUREEVENT) # gets rid of reports already signed in to
     currenttime = datetime.now()
     okstart_endtime = currenttime - settings.STUDENTM_SIGNIN_AFTER_DELTA
     okend_endtime = currenttime + settings.STUDENTM_SIGNIN_BEFORE_DELTA
     
     # upcoming_reports = upcoming_reports.filter(Q(end_time__range=(okstarttime,okendtime)) | Q(event__event_type__exact=profile.event_type))
+    upcoming_reports = MonitorReport.objects.daily_occurrences(dt=None) # grabs today only
+    upcoming_reports = upcoming_reports.filter(status__exact=MonitorReport.FUTUREEVENT) # gets rid of reports already signed in to    
     missed_reports_today = upcoming_reports.filter(end_time__lt=okstart_endtime).filter(event__event_type__exact=profile.event_type)
     upcoming_reports = upcoming_reports.filter(end_time__range=(okstart_endtime,okend_endtime))
     
 
+    next_report = MonitorReport.objects.filter(event__event_type__exact=profile.event_type).filter(end_time__gt=okstart_endtime).filter(status__exact=MonitorReport.FUTUREEVENT).order_by('end_time')
+    can_next_report = False
+    if len(next_report) > 0:
+        next_report = next_report[0]
+        can_next_report = next_report.can_report(profile,currenttime)
+     
+    all_duties = MonitorReport.objects.filter(Q(user__exact=profile)| Q(event__event_type__exact=profile.event_type)).exclude(status__exact=MonitorReport.FUTUREEVENT)
 
-    late_reports = MonitorReport.objects.filter(status__exact=MonitorReport.MISSED)
-    late_reports = late_reports.filter(event__event_type__exact=profile.event_type)
-    
+    #late_reports = MonitorReport.objects.filter(status__exact=MonitorReport.MISSED)
+    #late_reports = late_reports.filter(event__event_type__exact=profile.event_type)
+
+    #calcuate some stats, %on time, %missed/late, Score
+    ontime_len = len(all_duties.filter(user__exact=profile).filter(Q(status__exact=MonitorReport.COVERED) | Q(status__exact=MonitorReport.ONTIME)))
+    perOnTime = ontime_len*100/len(all_duties)
+    late_len = len(all_duties.filter(Q(status__exact=MonitorReport.LATE) | Q(status__exact=MonitorReport.MISSED)))
+    perLate =  late_len*100/len(all_duties)
+    score = ontime_len - (len(all_duties.filter(status__exact=MonitorReport.LATE))*2) -  (len(all_duties.filter(status__exact=MonitorReport.MISSED))*3)
+    stats = {'OnTime':perOnTime,'Late':perLate,'Score':score}
+
     return render_to_response('studentmonapp/userhome.html',
                               {'profile' : profile,
                                'upcoming_reports' : upcoming_reports,
                                'missed_reports_today' : missed_reports_today,
-                               'late_reports' : late_reports,
+                               'next_report' : next_report,
+                               'can_next_report' : can_next_report,
+                               'all_duties' : all_duties,
                                'reported_issues' : reported_issues,
+                               'stats' : stats,
                                },
                               context_instance=RequestContext(request))  
 
