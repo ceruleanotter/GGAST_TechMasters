@@ -1,7 +1,11 @@
+{% extends "site_base.html" %}
 
-{% block title %}Event: {{ event }}{% endblock %}
-{% block main_content %}
-    <h3>Swingtime Event</h3>
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Event: {{ event }}{% endblock %}
+
+{% block body %}
     <h4>Event Details</h4>
     <div>
       {{ event.title }}
@@ -26,17 +30,20 @@
     {% endwith %}
 
     <h4>Occurrences</h4>
-    {% if event.occurrence_set.count %}
+    Foo value : {{ event.foo }}
+    <br/>
+    {% if event.reports %}
     <ol>
-        {% for o in event.occurrence_set.all %}
+        {% for o in event.reports %}
         <li>
-            <a href="url swingtime-occurrence event.id o.id">
+            <a href="{{ o.get_absolute_url }}">  {{ o }}
                 {{ o.start_time|date:"l, F jS, Y P" }} &ndash; 
                 {{ o.end_time|date:"l, F jS, Y P" }}</a>
         </li>
         {% endfor %}
     </ol>
     {% else %}
+NO OCCUR
     {% endif %}
     
-{% endblock %}
+{% endblock body%}

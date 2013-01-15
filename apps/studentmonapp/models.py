@@ -5,6 +5,8 @@ from dateutil import rrule
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from django.conf import settings
+from django.forms.models import inlineformset_factory
+from django.db import models
 # Create your models here.
 class MonitorReport(Occurrence):
     """
@@ -63,7 +65,16 @@ class MonitorReport(Occurrence):
         
         personOK = self.is_not_attempting_cover(profile)
         
-        return (timeOK or (personOK and lateEnough)) 
+        return (timeOK or (personOK and lateEnough))
+
+    def get_issue_form(self,post_data=None):
+        
+        IssueFormSet = inlineformset_factory(MonitorReport,MonitorIssue,
+                                             fields=('severity','description','attempted_troubleshooting','solved'))
+        if post_data:
+            return IssueFormSet(post_data,instance=self)
+        return IssueFormSet(instance=self)
+        
 
     def __unicode__(self):
         mon = self.get_responsible_monitor()
@@ -74,22 +85,35 @@ class MonitorReport(Occurrence):
         return "%s, STATUS: %s, MONITOR %s," % (self.start_time.date(), self.status, coverstring)
 
 
+    #@models.permalink
+    def get_absolute_url(self):
+        return reverse('monitor_report_detail_view', args = [self.id])
+
 class MonitorIssue(models.Model):
+    EMERGENCY = 1
+    HIGHP  = 2
+    DISTRUPTIVE = 3
+    WANT = 4
+
     SEVERITY_CHOICES = (
-        (1, 'Emergency: Needs to be fix immediatly for safety or function of lab.'),
-        (2, 'High Priority: Needs to be fixed soon for the lab to be working at full capacity.'),
-        (3, 'Distruptive: Would be good to fix soon; an annoyance.'),
-        (4, 'Want: Something that isnt keeping students from learning or something that is a suggested feature.'),
+        (EMERGENCY, 'Emergency: Needs to be fix immediatly for safety or function of lab.'),
+        (HIGHP, 'High Priority: Needs to be fixed soon for the lab to be working at full capacity.'),
+        (DISTRUPTIVE, 'Distruptive: Would be good to fix soon; an annoyance.'),
+        (WANT, 'Want: Something that isnt keeping students from learning or something that is a suggested feature.'),
         )
+    NOTSOLVED = 0
+    SOLVED = 1
+    NA = 2
+
     SOLVED_CHOICES = (
-        (0, 'Not Solved'),
-        (1, 'SOLVED!'),
-        (2, 'No longer applicable'),
+        (NOTSOLVED, 'Not Solved'),
+        (SOLVED, 'SOLVED!'),
+        (NA, 'No longer applicable'),
         )
-    monitor_report = models.ForeignKey(MonitorReport)
+    monitor_report = models.ForeignKey(MonitorReport, blank=True, null=True, default=None, related_name='reports')
     severity = models.PositiveSmallIntegerField(max_length=1, choices=SEVERITY_CHOICES,default=SEVERITY_CHOICES[1][0])
     time_discovered = models.DateTimeField('Date issue discovered')
-    date_solved = models.DateTimeField('Date issue solved')
+    date_solved = models.DateTimeField('Date issue solved', blank=True, null=True, default=None)
     user = models.ForeignKey(Profile)
     description = models.TextField(max_length=500)
     attempted_troubleshooting = models.TextField(max_length=500)
@@ -98,6 +122,11 @@ class MonitorIssue(models.Model):
         """
         """
         return "%s, SOLVED? %s" % (self.description, self.solved)
+    def get_absolute_url(self):
+        return reverse('monitor_issue_detail_view', args=[self.id])
+    #@models.permalink
+    #def get_absolute_url(self):
+    #    return('monitor_event_detail',[str(self.id)])
 
 # proxy class for event type to override add event
 class MonitorEvent(Event):
@@ -105,8 +134,17 @@ class MonitorEvent(Event):
         proxy = True
 
     def get_absolute_url(self):
-        print "get absolute url in event was called"
-        return reverse('studentmonapp.views.userhome', args=["lyla"])
+        return reverse('monitor_event_detail_view', args=[self.id])
+    def reports(self):
+        occu = self.occurrence_set.all()
+        reports = []
+        for o in occu:
+            try:
+                report = o.monitorreport
+                reports.append(report)
+            except MonitorReport.DoesNotExist:
+                print "Not a monitor report"
+        return reports
 
     def add_occurrences(self, start_time, end_time, **rrule_params):
         #COPIED FROM SWINGTIME MODELS, EVENT, but occurence_Set.create changed to more explicit making of monitor reports.

@@ -8,29 +8,24 @@
 {% block body_class %}home{% endblock %}
 
 {% block banner %}
-    <h1>{% trans "Welcome to Pinax" %}</h1>
+    <h1>{% trans "Gashora Girls Computer Lab" %}</h1>
     <p>
         {% blocktrans %}
-        <b>Pinax</b> is a <a href="http://djangoproject.com/">Django</a>
-        project intended to provide a starting point for websites. By
-        integrating numerous reusable Django apps to take care of the
-        things that many sites have in common, it lets you focus on what
-        makes your site different.
+	  This is the Gashora Girls Academy of Science and Technology Computer Lab website. 
         {% endblocktrans %}
     </p>
     
-    <h2>About Basic Project</h2>
+    <h2>Student Monitors</h2>
     <p>
-        {% blocktrans %}
-        This project takes the account_project and adds profiles and notifications.
-        It is a foundation suitable for many sites that have user accounts with
-        profiles.
-        {% endblocktrans %}
+        {% block trans %}
+        Student Monitors who have accounts can <a href="{{ what_next_url }}" class="btn primary large">Sign In</a>?{% endblocktrans %}
+	
+        {% endblock trans %}
     </p>
     
     {% if user.is_authenticated %}
         {% url what_next as what_next_url %}
-        <p class="what_next">{% blocktrans %}Wondering <a href="{{ what_next_url }}" class="btn primary large">What Next</a>?{% endblocktrans %}</p>
+        <p class="what_next">{% blocktrans %}<a href="{{ what_next_url }}" class="btn primary large">What Next</a>?{% endblocktrans %}</p>
     {% else %}
         {% url acct_login as login_url %}
         {% ifsetting ACCOUNT_OPEN_SIGNUP %}
@@ -40,4 +35,4 @@
             <p>{% blocktrans %}You can <a href="{{ login_url }}" class="btn primary large">Log In</a> to try out the site.{% endblocktrans %}</p>
         {% endifsetting %}
     {% endif %}
-{% endblock %}
+{% endblock banner%}

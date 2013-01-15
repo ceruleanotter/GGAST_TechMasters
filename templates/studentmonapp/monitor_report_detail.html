@@ -29,6 +29,28 @@
          <dt>Cover Reason:</dt>
          <dd>{{ occurrence.cover_reason|default:"None" }}</dd>	   
 	 {% endif %}
+	 ISSUES
+	 <br/>
+	 {% for i in occurrence.reports.all %}
+	 <dt>ISSUE</dt>
+	 Severity: {{ i.get_severity_display }}
+	 <br/>
+	 Time Discovered : {{ i.time_discovered }}
+	 <br/>
+	 User Reporting : {{ i.user }}
+	 <br/>
+	 Description: {{ i.description }}
+	 <br/>
+	 Trouble Shooting: {{ i.attempted_troubleshooting }}
+	 <br/>
+	 {% if i.solved == 1%}
+	   SOLVED -- {{ i.date_solved }}
+	 {% else %}
+	   NOT SOLVED
+	 {% endif %}
+	 
+	 {% endfor %}
+
          <dt>Note(s:)</dt>
          <dd>
              {% with occurrence.event.notes.all as notes %}
@@ -60,8 +82,14 @@ SOME REPORT STUFF:
          <tbody>
               {{ form }}
          </tbody>
+<br/>
+AND THE WONDERFUL INLINE ISSUE FORM
+    {{ inlineform }}
+
      </table>
      </form>
+
+
      {% else %}
        You cannot sign for this report. You are signed in as {{ user.username }} and the time is {{ currenttime|date:"l, F jS P" }}
      {% endif %}
