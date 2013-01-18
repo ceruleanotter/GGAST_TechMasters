@@ -1,0 +1,78 @@
+{% extends "banner_base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Welcome {{ profile.name }}{% endblock %}
+
+{% block extra_head %}
+  
+  <style type="text/css">
+    .LT_status, .MS_status{font-weight:bold}
+    .MS_status{color:red}
+    .CO_status{color:gray;font-style:italic}
+
+  </style>
+
+
+{% endblock extra_head %}
+
+{% block banner %}
+<h1>Welcome {{ profile.name }}</h1>
+<h2>Your next duty</h2>
+{% if next_report|length > 0 %}
+  {% if can_next_report %}
+    <a href="{{ next_report.get_absolute_url }}" class="btn primary large"> Sign In </a>
+  {% else %}
+    <a href="{{ next_report.get_absolute_url }}"> View </a>
+  {%endif%}
+{%else%}
+  You currently have no future duties
+{%endif%}
+
+<h3>Other duties you can check in to </h3>
+{%if upcoming_reports%}
+  {% for r in upcoming_reports %}
+    <a href="{{ r.get_absolute_url }}"> {{ r }} </a>
+  {% endfor %}
+{%else%}
+  No reports to sign in to now
+{%endif%}
+
+<h2>Today's Missed Duty Reports</h2>
+{% if missed_reports %}
+  {% for r in missed_reports_today %}
+    <a href="{{ r.get_absolute_url }}"> {{ r }} </a>
+  {% endfor %}
+{%else%}
+    You have not missed any reports today
+{%endif%}
+
+<h2> Your Stats </h2>
+{{ stats.OnTime }}% On Time ---- {{ stats.Late }}% Late ---- SCORE: {{ stats.Score }}
+{% endblock banner %}
+
+{%block bottomrow %}
+
+  <div class="span6">
+ <h3> All Associated Duties </h3> 
+    <ul>
+      {% for d in all_duties %}
+
+
+
+	<li><a href="{{ d.get_absolute_url }}" class="{{d.status}}_status"> {{ d }} </a></li>
+	    
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="span6">
+    <h3> All Issues You've Reported </h3> 
+    <ul>
+      {% for r in reported_issues %}
+	<li><a href="{{ r.get_absolute_url }}"> {{ r }} </a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock bottomrow%}
+

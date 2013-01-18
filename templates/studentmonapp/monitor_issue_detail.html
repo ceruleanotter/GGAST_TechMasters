@@ -1,0 +1,40 @@
+{% extends "studentmonapp/monitor_report_detail.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Issue: {{ issue }}{% endblock %}
+
+{% block banner %}
+
+  {% with issue as i %}
+	<h3>{{i.description|truncatewords:"10"}}...</h3>
+    {% block issue %}
+      {{block.super}}
+      {%if i.monitor_report %}
+	<dd><strong>Monitor Report:</strong> <a href="{{ i.monitor_report.get_absolute_url }}">{{i.monitor_report}}</a>
+      {%endif%}
+    {% endblock issue %}
+{% endwith %}
+    {%comment%}
+<h3> Update Issue </h3>
+    {% with form as iform %}
+    {%block issueform %}
+     <form action="" method="post">
+       {% csrf_token %}
+     <table>
+
+      {{block.super}}
+ <tfoot>
+   <tr>
+     <td colspan="2"><input type="submit" value="Check In" /></td>
+   </tr>
+ </tfoot>
+</table>
+</form>
+     {%endblock issueform %}
+
+       {%endwith%}
+{%endcomment%}
+
+{% endblock banner%}

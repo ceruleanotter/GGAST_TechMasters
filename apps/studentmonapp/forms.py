@@ -1,6 +1,11 @@
 from swingtime.forms import MultipleOccurrenceForm
-from studentmonapp.models import MonitorEvent, MonitorReport
+from studentmonapp.models import MonitorEvent, MonitorReport, MonitorIssue
 from django.forms import ModelForm
+
+class IssueUpdateForm(ModelForm):
+    class Meta:
+        model = MonitorIssue
+        exclude = ('monitor_report','time_discovered','date_solved','user')
 
 class CheckInForm(ModelForm):
     """

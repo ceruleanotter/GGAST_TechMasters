@@ -7,7 +7,7 @@ from studentmonapp.models import MonitorIssue, MonitorReport
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from studentmonapp.forms import MultipleReportForm, ReportEventForm, CheckInForm
+from studentmonapp.forms import MultipleReportForm, ReportEventForm, CheckInForm, IssueUpdateForm
 from swingtime.views import add_event
 from datetime import datetime
 from django.conf import settings
@@ -61,9 +61,6 @@ def userhome(request):
                               context_instance=RequestContext(request))  
 
 
-    return HttpResponse("profile object is, I swear %s " % profile)
-
-
 def monitor_report_detail(request, report_id):
     report = get_object_or_404(MonitorReport, pk=report_id)
     userprofile = request.user.get_profile()
@@ -105,6 +102,8 @@ def monitor_report_detail(request, report_id):
                 issue.monitor_report = report
                 issue.time_discovered = currenttime
                 issue.user = userprofile
+                if not(issue.solved == MonitorIssue.NOTSOLVED):
+                    issue.date_solve = currenttime
                 issue.save()
             
             return HttpResponseRedirect(reverse('monitor_report_detail_view',args=(report_id,))) # Redirect after POST
@@ -139,3 +138,29 @@ def createuserschedule(request):
 
         return render_to_response('studentmonapp/createuserschedule.html', {'form': form, }, context_instance=RequestContext(request))
 '''
+
+def monitor_issue_view(request, pk):
+    issue = get_object_or_404(MonitorIssue, pk=pk)
+    if request.method == 'POST':
+        form = IssueUpdateForm(request.POST, instance=issue) # A form bound to the POST d
+        if form.is_valid():
+            # DO STUFF<, MIGHT WANT TO KEEP FROM SAVING
+            updated_issue = form.save(commit=False)
+            #updated_issue.description
+            #issue.
+            message = "Issue Updated"
+            return render_to_response('studentmonapp/monitor_issue_detail.html',
+ {
+                    'issue':issue,
+                    'form': form,
+                    'message':message,
+                    })
+    else:
+            form = IssueUpdateForm(instance=issue) # An unbound form
+
+
+    return render_to_response('studentmonapp/monitor_issue_detail.html', {
+                    'issue':issue,
+                    'form': form,
+                    },
+                              context_instance=RequestContext(request))

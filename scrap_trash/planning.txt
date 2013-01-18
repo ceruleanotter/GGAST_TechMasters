@@ -39,19 +39,21 @@ cover reason - check if the current user signed in is the same as the even user 
 
 /basic issue reporting done for occurences
 
-create the user page which shows them which events they can sign in to.
+/create the user page which shows them which events they can sign in to.
 
-also allows them just to put occurences
+/class up the issue page
+
+also allows them just to put issues
 
 create a script which changes events to missed
 
-change the server time, it's set on american time or something and is wrong
+/change the server time, it's set on american time or something and is wrong
 
 create an admin view showing each profile and the breakdown of missed/future/late/ontime/covered
+
 at first, let's just have a generic form for adding new issuies
 
-
-
+change from example.com, put a link the the homepage in the bar
 
 Extra todo:
 Modify the createuserschedule form so that:
@@ -65,9 +67,11 @@ Modify the createuserschedule form so that:
 Modify the event type field to make it mandetory for monitor reports:
        ***extraCan we override the event type field to make it mandetory for monitor reports, we can make the main user mandetory and then that will pull an event type, but this should be for the event, we would need a monitor event or something... if that is not easy, I will construct a signal for saving of the first monitor occurence and make it mandetory or something, post or pre? I could also put something in the event_form to make it mandetory, let's do that
 
-Event.get_absolute_url is not working in the occurence view, I'm assuming it's a casting issue
+/Event.get_absolute_url is not working in the occurence view, I'm assuming it's a casting issue
 
 make the whole thing not look like poop, put the profile bar in there
+
+make face pictures
 
 write tests to make sure all the timing is working
 

@@ -18,7 +18,7 @@ class MonitorReport(Occurrence):
     MISSED = 'MS'
 
     STATUS_CHOICES = (
-        ('FE', 'Future Event'),
+        ('FE', 'Future duty'),
         ('OK', 'Signed in on time'),
         ('CO', 'Covered by another person'),
         ('LT', 'Signed in late'),
@@ -70,7 +70,9 @@ class MonitorReport(Occurrence):
     def get_issue_form(self,post_data=None):
         
         IssueFormSet = inlineformset_factory(MonitorReport,MonitorIssue,
-                                             fields=('severity','description','attempted_troubleshooting','solved'))
+                                             fields=('severity','description','attempted_troubleshooting','solved'),
+                                             extra=1,
+                                             can_delete=False)
         if post_data:
             return IssueFormSet(post_data,instance=self)
         return IssueFormSet(instance=self)
@@ -96,10 +98,10 @@ class MonitorIssue(models.Model):
     WANT = 4
 
     SEVERITY_CHOICES = (
-        (EMERGENCY, 'Emergency: Needs to be fix immediatly for safety or function of lab.'),
-        (HIGHP, 'High Priority: Needs to be fixed soon for the lab to be working at full capacity.'),
-        (DISTRUPTIVE, 'Distruptive: Would be good to fix soon; an annoyance.'),
-        (WANT, 'Want: Something that isnt keeping students from learning or something that is a suggested feature.'),
+        (EMERGENCY, 'Emergency - Needs to be fix immediatly for safety or function of lab.'),
+        (HIGHP, 'High Priority - Needs to be fixed soon for the lab to be working at full capacity.'),
+        (DISTRUPTIVE, 'Distruptive - Would be good to fix soon; an annoyance.'),
+        (WANT, 'Want - Something that isnt keeping students from learning or something that is a suggested feature.'),
         )
     NOTSOLVED = 0
     SOLVED = 1

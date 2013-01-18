@@ -13,7 +13,7 @@
      <h3>{{st|date:"P"}} - {{et|date:"P"}}</h3>
      {% with occurrence.event as event %}
      
-      {{event.event_type.profile}}'s Duty
+      {{event.event_type.profile|capfirst}}'s Duty
      <br/>
      {% endwith %}
      
@@ -24,58 +24,97 @@
 	
      <dl>
        <dt>Status:</dt> <dd>{{ occurrence.get_status_display }}</dd>
-	  
-	 {% if occurrence.status == occurrence.COVERED %}
+       
+       {% if occurrence.status == occurrence.COVERED %}
          <dt>Cover Reason:</dt>
          <dd>{{ occurrence.cover_reason|default:"None" }}</dd>	   
-	 {% endif %}
-	 <dt>Issues</dt>
-	 {% for i in occurrence.reports.all %}
-	 <dt>{{i}}</dt>
-	 Severity: {{ i.get_severity_display }}
-	 <br/>
-	 Time Discovered : {{ i.time_discovered }}
-	 <br/>
-	 User Reporting : {{ i.user }}
-	 <br/>
-	 Description: {{ i.description }}
-	 <br/>
-	 Trouble Shooting: {{ i.attempted_troubleshooting }}
-	 <br/>
+       {% endif %}
+	<h3>Issues</h3>
+	<dl>
+	{% for i in occurrence.reports.all %}
+
+	<dt><a href="{{i.get_absolute_url}}">{{i.description|truncatewords:"10"}}...</a></dt>
+	  {% block issue %}
+	<dd><strong>Severity:</strong> {{ i.get_severity_display }} </dd>
+	<dd><strong>Time Discovered:</strong> {{ i.time_discovered }} </dd>
+	 <dd><strong>User Reporting:</strong> {{ i.user }} </dd>
+	 <dd><strong>Description:</strong> {{ i.description }} </dd>
+	 <dd><strong>Trouble Shooting:</strong> {{ i.attempted_troubleshooting }} </dd>
+	 <dd>
 	 {% if i.solved == 1%}
-	   SOLVED -- {{ i.date_solved }}
+	  <strong>Solved on {{ i.date_solved|default:"unknown date" }}</strong>
 	 {% else %}
-	   NOT SOLVED
+	  <strong>{{ i.get_solved_display }}</strong>
 	 {% endif %}
-	 
+	 </dd>
+	 {% endblock issue %}
 	 {% endfor %}
 
          
      </dl>
 
+     <br/>
      
      {% if form %}
      <form action="" method="post">
        {% csrf_token %}
      <table>
-         <tfoot>
-             <tr>
-                 <td colspan="2"><input type="submit" value="Check In" /></td>
-             </tr>
-         </tfoot>
+
          <tbody>
               {{ form }}
          </tbody>
-<br/>
-AND THE WONDERFUL INLINE ISSUE FORM
-    {{ inlineform }}
 
-     </table>
-     </form>
+
+   {% for iform in inlineform %}
+     {%block issueform %}
+     {%if iform.non_field_errors %}  <tr>{{ iform.non_field_errors }}</tr> {%endif%}
+     {% for hidden in iform.hidden_fields %}
+       {{ hidden }}
+     {% endfor %}
+     <tr>
+       {{ iform.description.errors }}
+       <th><label for="{{iform.description.html_name}}">
+	 {{ iform.description.label }}
+       </label></th>
+       <td>{{ iform.description }}</td>
+
+       {{ iform.attempted_troubleshooting.errors }}
+       <th><label for="{{iform.attempted_troubleshooting.html_name}}">
+	 {{ iform.attempted_troubleshooting.label }}
+       </label></th>
+       <td>{{ iform.attempted_troubleshooting }}</td>
+     </tr>
+
+     <tr>
+       {{ iform.severity.errors }}
+       <th><label for="{{iform.severity.html_name}}">
+	 {{ iform.severity.label }}
+       </label></th>
+       <td>{{ iform.severity }}</td>
+
+       {{ iform.solved.errors }}
+       <th><label for="{{iform.solved.html_name}}">
+	 {{ iform.solved.label }}
+       </label></th>
+       <td>{{ iform.solved }}</td>
+     </tr>
+     </tr>
+
+     {% endblock issueform %}
+   {% endfor %}
+ <tfoot>
+   <tr>
+     <td colspan="2"><input type="submit" value="Check In" /></td>
+   </tr>
+ </tfoot>
+</table>
+</form>
 
 
      {% else %}
-       You cannot sign for this report. You are signed in as {{ user.username }} and the time is {{ currenttime|date:"l, F jS P" }}
+       <span class="well">You cannot sign for this report. You are signed in as {{ user.username|capfirst }} and the time is {{ current_time|date:"l, F jS P" }}</span>
      {% endif %}
 
 {% endblock banner %}
+
+{% block bottomrow %} {% endblock bottomrow %}

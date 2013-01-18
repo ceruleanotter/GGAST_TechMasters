@@ -14,10 +14,12 @@ urlpatterns = patterns('studentmonapp.views',
                            name='monitor_event_detail_view',
                         ),
                        url(r'^monitorissue/(?P<pk>\d+)/$',
-                        DetailView.as_view( model=MonitorIssue,
-                                            template_name='studentmonapp/monitor_issue_detail.html',
-                                            context_object_name='issue',
-                                            ),
+                           'monitor_issue_view',
                            name='monitor_issue_detail_view',
                         ),
                        )
+
+''' DetailView.as_view( model=MonitorIssue,
+                                            template_name='studentmonapp/monitor_issue_detail.html',
+                                            context_object_name='issue',
+                                            ),'''
