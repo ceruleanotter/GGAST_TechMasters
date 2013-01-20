@@ -71,12 +71,14 @@ class MonitorReport(Occurrence):
         
         IssueFormSet = inlineformset_factory(MonitorReport,MonitorIssue,
                                              fields=('severity','description','attempted_troubleshooting','solved'),
-                                             extra=1,
+                                             extra=4,
                                              can_delete=False)
         if post_data:
             return IssueFormSet(post_data,instance=self)
         return IssueFormSet(instance=self)
         
+
+    
 
     def __unicode__(self):
         mon = self.get_responsible_monitor()
@@ -112,7 +114,7 @@ class MonitorIssue(models.Model):
         (SOLVED, 'SOLVED!'),
         (NA, 'No longer applicable'),
         )
-    monitor_report = models.ForeignKey(MonitorReport, blank=True, null=True, default=None, related_name='reports')
+    monitor_report = models.ForeignKey(MonitorReport, blank=True, null=True, default=None, related_name='issues')
     severity = models.PositiveSmallIntegerField(max_length=1, choices=SEVERITY_CHOICES,default=SEVERITY_CHOICES[1][0])
     time_discovered = models.DateTimeField('Date issue discovered')
     date_solved = models.DateTimeField('Date issue solved', blank=True, null=True, default=None)

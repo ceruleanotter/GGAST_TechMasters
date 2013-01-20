@@ -7,11 +7,11 @@ from studentmonapp.models import MonitorIssue, MonitorReport
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from studentmonapp.forms import MultipleReportForm, ReportEventForm, CheckInForm, IssueUpdateForm
+from studentmonapp.forms import MultipleReportForm, ReportEventForm, CheckInForm, IssueUpdateForm, get_issue_form
 from swingtime.views import add_event
 from datetime import datetime
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Count
 
 def userhome(request):
     page_user = request.user
@@ -21,8 +21,6 @@ def userhome(request):
     currenttime = datetime.now()
     okstart_endtime = currenttime - settings.STUDENTM_SIGNIN_AFTER_DELTA
     okend_endtime = currenttime + settings.STUDENTM_SIGNIN_BEFORE_DELTA
-    
-    # upcoming_reports = upcoming_reports.filter(Q(end_time__range=(okstarttime,okendtime)) | Q(event__event_type__exact=profile.event_type))
     upcoming_reports = MonitorReport.objects.daily_occurrences(dt=None) # grabs today only
     upcoming_reports = upcoming_reports.filter(status__exact=MonitorReport.FUTUREEVENT) # gets rid of reports already signed in to    
     missed_reports_today = upcoming_reports.filter(end_time__lt=okstart_endtime).filter(event__event_type__exact=profile.event_type)
@@ -37,16 +35,39 @@ def userhome(request):
      
     all_duties = MonitorReport.objects.filter(Q(user__exact=profile)| Q(event__event_type__exact=profile.event_type)).exclude(status__exact=MonitorReport.FUTUREEVENT)
 
-    #late_reports = MonitorReport.objects.filter(status__exact=MonitorReport.MISSED)
-    #late_reports = late_reports.filter(event__event_type__exact=profile.event_type)
+
 
     #calcuate some stats, %on time, %missed/late, Score
-    ontime_len = len(all_duties.filter(user__exact=profile).filter(Q(status__exact=MonitorReport.COVERED) | Q(status__exact=MonitorReport.ONTIME)))
+    ontime = all_duties.filter(user__exact=profile).filter(Q(status__exact=MonitorReport.COVERED) | Q(status__exact=MonitorReport.ONTIME))
+    ontime_len = len(ontime)
     perOnTime = ontime_len*100/len(all_duties)
     late_len = len(all_duties.filter(Q(status__exact=MonitorReport.LATE) | Q(status__exact=MonitorReport.MISSED)))
     perLate =  late_len*100/len(all_duties)
-    score = ontime_len - (len(all_duties.filter(status__exact=MonitorReport.LATE))*2) -  (len(all_duties.filter(status__exact=MonitorReport.MISSED))*3)
+    score = ontime_len - (len(all_duties.filter(status__exact=MonitorReport.LATE))*2) -  (len(all_duties.filter(status__exact=MonitorReport.MISSED))*3)+0.5*len(ontime.annotate(num_issues=Count('issues')).filter(num_issues__gt=0))
+
+
     stats = {'OnTime':perOnTime,'Late':perLate,'Score':score}
+    
+    message = None
+    #generic issues
+    if request.method == 'POST':
+        issue_forms = get_issue_form(request.POST)
+        if issue_forms.is_valid():
+            issues = issue_forms.save(commit=False)
+            for issue in issues:
+                issue.monitor_report = None
+                issue.time_discovered = currenttime
+                issue.user = profile
+                if issue.solved == MonitorIssue.SOLVED:
+                    issue.date_solved = currenttime
+                issue.save()
+            
+            message = "Issues saved"
+            issue_forms = get_issue_form()
+        
+    else:
+        issue_forms = get_issue_form()
+                
 
     return render_to_response('studentmonapp/userhome.html',
                               {'profile' : profile,
@@ -57,6 +78,8 @@ def userhome(request):
                                'all_duties' : all_duties,
                                'reported_issues' : reported_issues,
                                'stats' : stats,
+                               'message' : message,
+                               'issue_forms' : issue_forms,
                                },
                               context_instance=RequestContext(request))  
 

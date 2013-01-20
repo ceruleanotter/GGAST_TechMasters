@@ -43,7 +43,7 @@ cover reason - check if the current user signed in is the same as the even user 
 
 /class up the issue page
 
-also allows them just to put issues
+/also allows them just to put issues
 
 create a script which changes events to missed
 
@@ -51,7 +51,7 @@ create a script which changes events to missed
 
 create an admin view showing each profile and the breakdown of missed/future/late/ontime/covered
 
-at first, let's just have a generic form for adding new issuies
+/at first, let's just have a generic form for adding new issuies
 
 change from example.com, put a link the the homepage in the bar
 
@@ -69,10 +69,14 @@ Modify the event type field to make it mandetory for monitor reports:
 
 /Event.get_absolute_url is not working in the occurence view, I'm assuming it's a casting issue
 
-make the whole thing not look like poop, put the profile bar in there
+/make the whole thing not look like poop, put the profile bar in there
 
 make face pictures
 
 write tests to make sure all the timing is working
 
-fix up the monitor issue for to be in the forms area or just less bootleg
+/fix up the monitor issue for to be in the forms area or just less bootleg
+
+ajaxy add more issues if needed
+
+jquery slide down if want to report issue

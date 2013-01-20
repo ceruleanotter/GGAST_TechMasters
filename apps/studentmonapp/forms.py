@@ -1,6 +1,7 @@
 from swingtime.forms import MultipleOccurrenceForm
 from studentmonapp.models import MonitorEvent, MonitorReport, MonitorIssue
 from django.forms import ModelForm
+from django.forms.models import modelformset_factory
 
 class IssueUpdateForm(ModelForm):
     class Meta:
@@ -55,3 +56,13 @@ class ReportEventForm(ModelForm):
     def __init__(self, *args, **kws):
         super(ReportEventForm, self).__init__(*args, **kws)
         self.fields['description'].required = False
+
+def get_issue_form(postdata=None):
+    IssueFormSet = modelformset_factory(MonitorIssue, 
+                                       fields=('severity','description','attempted_troubleshooting','solved'),
+                                       extra=1) 
+    if (postdata):
+        formset = IssueFormSet(postdata)
+    else:
+        formset = IssueFormSet(queryset=MonitorIssue.objects.none())
+    return formset

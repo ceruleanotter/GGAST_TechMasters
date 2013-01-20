@@ -18,6 +18,10 @@
 {% endblock extra_head %}
 
 {% block banner %}
+{%if message %}
+<div class="alert-message success">{{message}}</div>
+
+{%endif%}
 <h1>Welcome {{ profile.name }}</h1>
 <h2>Your next duty</h2>
 {% if next_report|length > 0 %}
@@ -54,6 +58,66 @@
 
 {%block bottomrow %}
 
+
+  <div class="span12">
+<h3> Have you noticed any issues? </h3>
+</div>
+  <div class="span12">
+
+
+     <form action="" method="post">
+       {% csrf_token %}
+     <table>
+
+    {{ issue_forms.management_form }}
+    {% for iform in issue_forms %}
+
+    {%block issueform %}
+           {%if iform.non_field_errors %}  <tr>{{ iform.non_field_errors }}</tr> {%endif%}
+     {% for hidden in iform.hidden_fields %}
+       {{ hidden }}
+     {% endfor %}
+     <tr>
+       {{ iform.description.errors }}
+       <th><label for="{{iform.description.html_name}}">
+	 {{ iform.description.label }}
+       </label></th>
+       <td>{{ iform.description }}</td>
+
+       {{ iform.attempted_troubleshooting.errors }}
+       <th><label for="{{iform.attempted_troubleshooting.html_name}}">
+	 {{ iform.attempted_troubleshooting.label }}
+       </label></th>
+       <td>{{ iform.attempted_troubleshooting }}</td>
+     </tr>
+
+     <tr>
+       {{ iform.severity.errors }}
+       <th><label for="{{iform.severity.html_name}}">
+	 {{ iform.severity.label }}
+       </label></th>
+       <td>{{ iform.severity }}</td>
+
+       {{ iform.solved.errors }}
+       <th><label for="{{iform.solved.html_name}}">
+	 {{ iform.solved.label }}
+       </label></th>
+       <td>{{ iform.solved }}</td>
+     </tr>
+     </tr>
+
+    {%endblock issueform%}
+    {%endfor%}
+ <tfoot>
+   <tr>
+     <td colspan="2"><input type="submit" value="Add Issue" /></td>
+   </tr>
+ </tfoot>
+</table>
+</form>
+
+  </div>
+  <br/>
   <div class="span6">
  <h3> All Associated Duties </h3> 
     <ul>

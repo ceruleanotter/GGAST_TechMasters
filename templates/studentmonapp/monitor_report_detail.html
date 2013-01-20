@@ -64,8 +64,9 @@
               {{ form }}
          </tbody>
 
-
+{{ inlineform.management_form }}
    {% for iform in inlineform %}
+
      {%block issueform %}
      {%if iform.non_field_errors %}  <tr>{{ iform.non_field_errors }}</tr> {%endif%}
      {% for hidden in iform.hidden_fields %}
