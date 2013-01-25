@@ -53,7 +53,7 @@ create an admin view showing each profile and the breakdown of missed/future/lat
 
 /at first, let's just have a generic form for adding new issuies
 
-change from example.com, put a link the the homepage in the bar
+/change from example.com, put a link the the homepage in the bar
 
 Extra todo:
 Modify the createuserschedule form so that:
@@ -77,6 +77,6 @@ write tests to make sure all the timing is working
 
 /fix up the monitor issue for to be in the forms area or just less bootleg
 
-ajaxy add more issues if needed
+/ajaxy add more issues if needed
 
-jquery slide down if want to report issue
+/jquery slide down if want to report issue

@@ -130,6 +130,7 @@ def monitor_report_detail(request, report_id):
                 issue.save()
             
             return HttpResponseRedirect(reverse('monitor_report_detail_view',args=(report_id,))) # Redirect after POST
+        
     else:
         form = None
 

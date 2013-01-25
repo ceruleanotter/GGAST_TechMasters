@@ -6,14 +6,20 @@
 {% block head_title %}Welcome {{ profile.name }}{% endblock %}
 
 {% block extra_head %}
-  
-  <style type="text/css">
-    .LT_status, .MS_status{font-weight:bold}
-    .MS_status{color:red}
-    .CO_status{color:gray;font-style:italic}
+  {{ block.super }}
 
-  </style>
 
+    <script src="{{ STATIC_URL }}js/jquery.js"></script>
+    <script>
+      $( document ).ready( function() {
+      $("#hidden_issue_form").hide();
+      $("#issue_toggle_button").click(function(event){
+         $("#hidden_issue_form").slideToggle();
+      });
+ 
+ 
+      });
+    </script>
 
 {% endblock extra_head %}
 
@@ -54,16 +60,16 @@
 
 <h2> Your Stats </h2>
 {{ stats.OnTime }}% On Time ---- {{ stats.Late }}% Late ---- SCORE: {{ stats.Score }}
-{% endblock banner %}
-
-{%block bottomrow %}
 
 
-  <div class="span12">
-<h3> Have you noticed any issues? </h3>
+
+  <div class="span12 center_parent">
+<h3 class="btn large center" id="issue_toggle_button"> Click to report an issue </h3>
 </div>
-  <div class="span12">
 
+  <div class="span12" id="hidden_issue_form">
+<br/>
+<br/>
 
      <form action="" method="post">
        {% csrf_token %}
@@ -117,7 +123,13 @@
 </form>
 
   </div>
-  <br/>
+
+
+{% endblock banner %}
+
+{%block bottomrow %}
+
+
   <div class="span6">
  <h3> All Associated Duties </h3> 
     <ul>

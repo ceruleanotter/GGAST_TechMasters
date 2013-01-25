@@ -71,11 +71,11 @@ class MonitorReport(Occurrence):
         
         IssueFormSet = inlineformset_factory(MonitorReport,MonitorIssue,
                                              fields=('severity','description','attempted_troubleshooting','solved'),
-                                             extra=4,
+                                             extra=1,
                                              can_delete=False)
         if post_data:
-            return IssueFormSet(post_data,instance=self)
-        return IssueFormSet(instance=self)
+            return IssueFormSet(post_data,instance=self,prefix='issues')
+        return IssueFormSet(instance=self, prefix='issues')
         
 
     
@@ -115,7 +115,7 @@ class MonitorIssue(models.Model):
         (NA, 'No longer applicable'),
         )
     monitor_report = models.ForeignKey(MonitorReport, blank=True, null=True, default=None, related_name='issues')
-    severity = models.PositiveSmallIntegerField(max_length=1, choices=SEVERITY_CHOICES,default=SEVERITY_CHOICES[1][0])
+    severity = models.PositiveSmallIntegerField(max_length=1, choices=SEVERITY_CHOICES,default=SEVERITY_CHOICES[0][0])
     time_discovered = models.DateTimeField('Date issue discovered')
     date_solved = models.DateTimeField('Date issue solved', blank=True, null=True, default=None)
     user = models.ForeignKey(Profile)

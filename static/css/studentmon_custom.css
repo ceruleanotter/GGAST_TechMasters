@@ -1,0 +1,5 @@
+.LT_status, .MS_status{font-weight:bold}
+.MS_status{color:red}
+.CO_status{color:gray;font-style:italic}
+.center{ margin-left: auto; margin-right: auto; float:none; }
+.center_parent{ width:100%; text-align:center;}
