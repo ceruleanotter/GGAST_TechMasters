@@ -1,8 +1,6 @@
 # Create your views here.
 from django.shortcuts import render_to_response, get_object_or_404
-from idios.utils import get_profile_model
 from profiles.models import Profile
-from django.contrib.auth.models import User
 from studentmonapp.models import MonitorIssue, MonitorReport
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
@@ -11,7 +9,7 @@ from studentmonapp.forms import MultipleReportForm, ReportEventForm, CheckInForm
 from swingtime.views import add_event
 from datetime import datetime
 from django.conf import settings
-from django.db.models import Q, Count
+from django.db.models import Q
 
 def userhome(request):
     page_user = request.user
@@ -36,17 +34,11 @@ def userhome(request):
     all_duties = MonitorReport.objects.filter(Q(user__exact=profile)| Q(event__event_type__exact=profile.event_type)).exclude(status__exact=MonitorReport.FUTUREEVENT)
 
 
-
     #calcuate some stats, %on time, %missed/late, Score
-    ontime = all_duties.filter(user__exact=profile).filter(Q(status__exact=MonitorReport.COVERED) | Q(status__exact=MonitorReport.ONTIME))
-    ontime_len = len(ontime)
-    perOnTime = ontime_len*100/len(all_duties)
-    late_len = len(all_duties.filter(Q(status__exact=MonitorReport.LATE) | Q(status__exact=MonitorReport.MISSED)))
-    perLate =  late_len*100/len(all_duties)
-    score = ontime_len - (len(all_duties.filter(status__exact=MonitorReport.LATE))*2) -  (len(all_duties.filter(status__exact=MonitorReport.MISSED))*3)+0.5*len(ontime.annotate(num_issues=Count('issues')).filter(num_issues__gt=0))
 
 
-    stats = {'OnTime':perOnTime,'Late':perLate,'Score':score}
+
+    stats = profile.get_stats()
     
     message = None
     #generic issues
@@ -166,25 +158,45 @@ def createuserschedule(request):
 def monitor_issue_view(request, pk):
     issue = get_object_or_404(MonitorIssue, pk=pk)
     if request.method == 'POST':
-        form = IssueUpdateForm(request.POST, instance=issue) # A form bound to the POST d
-        if form.is_valid():
+        form = IssueUpdateForm(request.POST) # A form bound to the POST d
+        if form.is_valid() and request.user.get_profile() == issue.user:
             # DO STUFF<, MIGHT WANT TO KEEP FROM SAVING
-            updated_issue = form.save(commit=False)
-            #updated_issue.description
-            #issue.
+            updated_issue = request.POST
+            issue.description += "\n" + updated_issue['description']
+            issue.attempted_troubleshooting += "\n" + updated_issue['attempted_troubleshooting']
+            issue.severity = MonitorIssue.SEVERITY_CHOICES[int(updated_issue['severity'])][0]
+            if (updated_issue['solved'] != issue.solved ):
+                issue.solved = MonitorIssue.SOLVED_CHOICES[int(updated_issue['solved'])][0]
+                if (issue.solved == MonitorIssue.SOLVED):
+                    issue.date_solved = datetime.now()
+                
+
             message = "Issue Updated"
+            issue.save()
+
             return render_to_response('studentmonapp/monitor_issue_detail.html',
  {
                     'issue':issue,
                     'form': form,
                     'message':message,
-                    })
+                    },
+                              context_instance=RequestContext(request))
+    elif request.user.get_profile() == issue.user:
+            form = IssueUpdateForm(instance=issue) # An unbound form, with no issue associated
     else:
-            form = IssueUpdateForm(instance=issue) # An unbound form
-
-
+        form = None
     return render_to_response('studentmonapp/monitor_issue_detail.html', {
                     'issue':issue,
                     'form': form,
+                    },
+                              context_instance=RequestContext(request))
+def home(request):
+    topthree = Profile.objects.order_by('-score')[:2]
+    profiles = Profile.objects.order_by('name')
+
+        
+    return render_to_response('homepage.html', {
+                    'profiles':profiles,
+                    'topProfiles':topthree,
                     },
                               context_instance=RequestContext(request))

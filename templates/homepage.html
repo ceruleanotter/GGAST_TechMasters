@@ -29,18 +29,30 @@
             <p>{% blocktrans %}You can <a href="{{ login_url }}" class="btn primary large">Log In</a> to try out the site.{% endblocktrans %}</p>
         {% endifsetting %}
     {% endif %}
+    <br/>
+    Notice any problems with this site? Please contact Ms.Lyla.
 {% endblock %}
 
 {% block bottomrow %}
   <div class="span10">
     <h3>MONITOR CALENDAR COMING SOON</h3>
+    For now, please look at the computer lab door for the schedule.
   </div>
-  <div class="span2">
-    <h3>WIZARDS</h3>
+  <div class="span3">
+    
+    <h3>Top Techies</h3>
     <ul>
+      {%for p in topProfiles%}
+	<li><a href="{{p.get_absolute_url}}">{{p}}</a></li>
+	{%endfor%}
+</ul>
+<h3>Tech Masters</h3>
+
+<ul>
       {% for profile in profiles %}
 	<li><a href="{{profile.get_absolute_url}}">{{profile}}</a></li>
       {% endfor %}
-    </ul>
+</ul>
+    
   </div>
 {% endblock bottomrow %}

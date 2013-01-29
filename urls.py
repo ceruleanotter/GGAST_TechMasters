@@ -12,16 +12,14 @@ from pinax.apps.account.openid_consumer import PinaxConsumer
 
 handler500 = "pinax.views.server_error"
 
-
-urlpatterns = patterns("",
-    #url(r"^$", direct_to_template, {
-    #    "template": "homepage.html",
-    #}, name="home"),
-    url(r"^$", ListView.as_view(
+'''url(r"^$", ListView.as_view(
                 queryset=Profile.objects.all(),
                 context_object_name='profiles',
                 template_name='homepage.html'),
-        name="home"),
+        name="home"),'''
+
+urlpatterns = patterns("",
+    url(r"^$",'studentmonapp.views.home',name="home"),
     url(r"^admin/invite_user/$", "pinax.apps.signup_codes.views.admin_invite_user", name="admin_invite_user"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^about/", include("about.urls")),

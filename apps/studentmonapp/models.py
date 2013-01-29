@@ -1,12 +1,18 @@
 from django.db import models
 from swingtime.models import Occurrence, OccurrenceManager, Event
-from profiles.models import Profile 
 from dateutil import rrule
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from django.conf import settings
 from django.forms.models import inlineformset_factory
 from django.db import models
+
+
+#for signals
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
 # Create your models here.
 class MonitorReport(Occurrence):
     """
@@ -26,7 +32,7 @@ class MonitorReport(Occurrence):
         )
     status = models.CharField(max_length=2, choices=STATUS_CHOICES,default=STATUS_CHOICES[0][0])
     signed_time = models.DateTimeField('Date Signed In',null=True, blank=True, default=None)
-    user = models.ForeignKey(Profile, null=True, blank=True, default=None,related_name='reports')
+    user = models.ForeignKey('profiles.Profile', null=True, blank=True, default=None,related_name='reports')
     cover_reason = models.TextField(max_length=250)
     #getting the manager from the superclass
     objects = OccurrenceManager()
@@ -118,7 +124,7 @@ class MonitorIssue(models.Model):
     severity = models.PositiveSmallIntegerField(max_length=1, choices=SEVERITY_CHOICES,default=SEVERITY_CHOICES[0][0])
     time_discovered = models.DateTimeField('Date issue discovered')
     date_solved = models.DateTimeField('Date issue solved', blank=True, null=True, default=None)
-    user = models.ForeignKey(Profile)
+    user = models.ForeignKey('profiles.Profile')
     description = models.TextField(max_length=500)
     attempted_troubleshooting = models.TextField(max_length=500)
     solved = models.SmallIntegerField(max_length=1, choices=SOLVED_CHOICES,default=SOLVED_CHOICES[0][0]) 
@@ -178,3 +184,12 @@ class MonitorEvent(Event):
                 for ev in rrule.rrule(dtstart=start_time, **rrule_params):
                     mr = MonitorReport(event=self,start_time=ev, end_time=ev + delta)
                     mr.save(force_insert=True)
+
+
+#a signal that updates the user's score whenever a monitor report is changed
+def update_user_score(sender, instance, created, **kwargs):
+    if not(created):
+        instance.user.calc_score()
+        print "Score Calculated"
+
+post_save.connect(update_user_score,sender=MonitorReport,dispatch_uid="update_score")

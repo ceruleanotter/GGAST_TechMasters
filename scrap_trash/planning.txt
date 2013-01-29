@@ -45,11 +45,22 @@ cover reason - check if the current user signed in is the same as the even user 
 
 /also allows them just to put issues
 
-create a script which changes events to missed
+/create a script which changes events to missed
 
 /change the server time, it's set on american time or something and is wrong
 
 create an admin view showing each profile and the breakdown of missed/future/late/ontime/covered
+
+/can't log out when on homepage screen
+
+don't allow users to change their associated event
+
+put on server
+
+/change to technical masters
+
+add link to emailing me
+
 
 /at first, let's just have a generic form for adding new issuies
 

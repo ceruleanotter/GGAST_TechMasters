@@ -16,7 +16,8 @@
       {%endif%}
     {% endblock issue %}
 {% endwith %}
-    {%comment%}
+
+   {% if issue %}
 <h3> Update Issue </h3>
     {% with form as iform %}
     {%block issueform %}
@@ -32,9 +33,9 @@
  </tfoot>
 </table>
 </form>
+
      {%endblock issueform %}
 
        {%endwith%}
-{%endcomment%}
-
+{%endif%}
 {% endblock banner%}
