@@ -1,0 +1,49 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Event: {{ event }}{% endblock %}
+
+{% block body %}
+    <h4>Event Details</h4>
+    <div>
+      {{ event.title }}
+      <br/>
+      {{ event.event_type.profile }}
+      <br/>
+      {{ event.description }}
+      <br/>
+    </div>
+    <br/>
+    <h4>Notes</h4>
+    {% with event.notes.all as notes %}
+    {% if notes %}
+    <ul>
+        {% for note in notes %}
+        <li>{{ note }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>None</p>
+    {% endif %}
+    {% endwith %}
+
+    <h4>Occurrences</h4>
+    Foo value : {{ event.foo }}
+    <br/>
+    {% if event.reports %}
+    <ol>
+        {% for o in event.reports %}
+        <li>
+            <a href="{{ o.get_absolute_url }}">  {{ o }}
+                {{ o.start_time|date:"l, F jS, Y P" }} &ndash; 
+                {{ o.end_time|date:"l, F jS, Y P" }}</a>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+NO OCCUR
+    {% endif %}
+    
+{% endblock body%}

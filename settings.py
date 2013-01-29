@@ -4,6 +4,22 @@
 import os.path
 import posixpath
 
+
+#swingtime settings
+import sys
+try:
+    # dateutil is an absolute requirement
+    import dateutil
+except ImportError:
+    raise ImportError(
+        'django-swingtime requires the "dateutil" package '
+        '(http://labix.org/python-dateutil)'
+    )
+
+SWINGTIME_SETTINGS_MODULE = 'swingtime_settings'
+
+#end of swingtime settings
+
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
@@ -42,7 +58,7 @@ DATABASES = {
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = "US/Eastern"
+TIME_ZONE = "Africa/Kigali"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -135,6 +151,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     
     "notification.context_processors.notification",
     "announcements.context_processors.site_wide_announcements",
+    'swingtime.context_processors.current_datetime',
 ]
 
 INSTALLED_APPS = [
@@ -176,6 +193,8 @@ INSTALLED_APPS = [
 
     #Lyla Apps
     "south",
+    "swingtime",
+    "studentmonapp"
 
 ]
 
@@ -194,10 +213,10 @@ ABSOLUTE_URL_OVERRIDES = {
 AUTH_PROFILE_MODULE = "profiles.Profile"
 NOTIFICATION_LANGUAGE_MODULE = "account.Account"
 
-ACCOUNT_OPEN_SIGNUP = True
+ACCOUNT_OPEN_SIGNUP = False
 ACCOUNT_USE_OPENID = False
-ACCOUNT_REQUIRED_EMAIL = False
-ACCOUNT_EMAIL_VERIFICATION = False
+ACCOUNT_REQUIRED_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = True
 ACCOUNT_EMAIL_AUTHENTICATION = False
 ACCOUNT_UNIQUE_EMAIL = EMAIL_CONFIRMATION_UNIQUE_EMAIL = False
 
@@ -206,7 +225,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_URL = "/account/login/" # @@@ any way this can be a url name?
-LOGIN_REDIRECT_URLNAME = "what_next"
+LOGIN_REDIRECT_URLNAME = "userhome"
 LOGOUT_REDIRECT_URLNAME = "home"
 
 EMAIL_CONFIRMATION_DAYS = 2
@@ -222,3 +241,18 @@ try:
     from local_settings import *
 except ImportError:
     pass
+
+#from swingtime
+
+try:
+    import django_extensions
+except ImportError:
+    pass
+else:
+    INSTALLED_APPS += ('django_extensions',)
+#end of from swingtime
+
+#settings for studentmonapp
+import datetime
+STUDENTM_SIGNIN_BEFORE_DELTA = datetime.timedelta(minutes=10)
+STUDENTM_SIGNIN_AFTER_DELTA = datetime.timedelta(minutes=30)

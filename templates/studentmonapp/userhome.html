@@ -1,0 +1,153 @@
+{% extends "banner_base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Welcome {{ profile.name }}{% endblock %}
+
+{% block extra_head %}
+  {{ block.super }}
+
+
+    <script>
+      $( document ).ready( function() {
+      $("#hidden_issue_form").hide();
+      $("#issue_toggle_button").click(function(event){
+         $("#hidden_issue_form").slideToggle();
+      });
+ 
+ 
+      });
+    </script>
+
+{% endblock extra_head %}
+
+{% block banner %}
+{%if message %}
+<div class="alert-message success">{{message}}</div>
+
+{%endif%}
+<h1>Welcome {{ profile.name }}</h1>
+<h2>Your next duty</h2>
+{% if next_report|length > 0 %}
+  {% if can_next_report %}
+    <a href="{{ next_report.get_absolute_url }}" class="btn primary large"> Sign In </a>
+  {% else %}
+    <a href="{{ next_report.get_absolute_url }}"> View </a>
+  {%endif%}
+{%else%}
+  You currently have no future duties
+{%endif%}
+
+<h3>Other duties you can check in to </h3>
+{%if upcoming_reports%}
+  {% for r in upcoming_reports %}
+    <a href="{{ r.get_absolute_url }}"> {{ r }} </a>
+  {% endfor %}
+{%else%}
+  No reports to sign in to now
+{%endif%}
+
+<h2>Today's Missed Duty Reports</h2>
+{% if missed_reports %}
+  {% for r in missed_reports_today %}
+    <a href="{{ r.get_absolute_url }}"> {{ r }} </a>
+  {% endfor %}
+{%else%}
+    You have not missed any reports today
+{%endif%}
+
+<h2> Your Stats </h2>
+{{ stats.OnTime }}% On Time ---- {{ stats.Late }}% Late ---- SCORE: {{ stats.Score }}
+
+
+
+  <div class="span12 center_parent">
+<h3 class="btn large center" id="issue_toggle_button"> Click to report an issue </h3>
+</div>
+
+  <div class="span12" id="hidden_issue_form">
+<br/>
+<br/>
+
+     <form action="" method="post">
+       {% csrf_token %}
+     <table>
+
+    {{ issue_forms.management_form }}
+    {% for iform in issue_forms %}
+
+    {%block issueform %}
+           {%if iform.non_field_errors %}  <tr>{{ iform.non_field_errors }}</tr> {%endif%}
+     {% for hidden in iform.hidden_fields %}
+       {{ hidden }}
+     {% endfor %}
+     <tr>
+       {{ iform.description.errors }}
+       <th><label for="{{iform.description.html_name}}">
+	 {{ iform.description.label }}
+       </label></th>
+       <td>{{ iform.description }}</td>
+
+       {{ iform.attempted_troubleshooting.errors }}
+       <th><label for="{{iform.attempted_troubleshooting.html_name}}">
+	 {{ iform.attempted_troubleshooting.label }}
+       </label></th>
+       <td>{{ iform.attempted_troubleshooting }}</td>
+     </tr>
+
+     <tr>
+       {{ iform.severity.errors }}
+       <th><label for="{{iform.severity.html_name}}">
+	 {{ iform.severity.label }}
+       </label></th>
+       <td>{{ iform.severity }}</td>
+
+       {{ iform.solved.errors }}
+       <th><label for="{{iform.solved.html_name}}">
+	 {{ iform.solved.label }}
+       </label></th>
+       <td>{{ iform.solved }}</td>
+     </tr>
+     </tr>
+
+    {%endblock issueform%}
+    {%endfor%}
+ <tfoot>
+   <tr>
+     <td colspan="2"><input type="submit" value="Add Issue" /></td>
+   </tr>
+ </tfoot>
+</table>
+</form>
+
+  </div>
+
+
+{% endblock banner %}
+
+{%block bottomrow %}
+
+
+  <div class="span6">
+ <h3> All Associated Duties </h3> 
+    <ul>
+      {% for d in all_duties %}
+
+
+
+	<li><a href="{{ d.get_absolute_url }}" class="{{d.status}}_status"> {{ d }} </a></li>
+	    
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="span6">
+    <h3> All Issues You've Reported </h3> 
+    <ul>
+      {% for r in reported_issues %}
+	<li><a href="{{ r.get_absolute_url }}"> {{ r }} </a></li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock bottomrow%}
+

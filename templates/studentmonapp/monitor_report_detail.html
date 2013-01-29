@@ -1,0 +1,190 @@
+{% extends "banner_base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}Report for {{occurrence.start_time|date:"M. j P"}} - {{occurrence.end_time|date:"P"}}{% endblock %}
+
+
+{% block extra_head %}
+    {{ block.super }}    
+
+    <script>
+      $( document ).ready( function() {
+      //set the last form to the last form
+      //when they start typing in the last form, generate a new form...we can have a function for that
+ 
+      
+      updateLastEl();
+      $('#id_issues-TOTAL_FORMS').val($('tbody.single_issue_form_wrapper').length);
+
+      function updateLastEl(){
+
+	if (typeof(lastEl) != "undefined") {
+
+          lastEl.find('textarea').each(function() {
+              $(this).unbind('change')
+	  });
+
+	}
+        last = 'table#issue_forms_wrapper tbody.single_issue_form_wrapper:last'
+	lastEl = $(last)
+	
+        lastEl.find('textarea').each(function() {
+	     $(this).unbind()
+             $(this).change(function(){
+	     cloneMore(last,'issues')
+	     });
+	});
+
+      }
+
+      function cloneMore(selector, type) {
+         var newElement = $(selector).clone(true);
+	 var total = $('#id_' + type + '-TOTAL_FORMS').val();//! need to check out what this is
+	 newElement.find(':input').each(function() {
+	    var name = $(this).attr('name').replace('-' + (total-1) + '-','-' + total + '-');
+	    var id = 'id_' + name;
+	    $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
+	 });
+
+	 newElement.find('label').each(function() {
+	    var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
+	    $(this).attr('for', newFor);
+	 });
+	 total++;
+	 $('#id_' + type + '-TOTAL_FORMS').val(total);
+	 $(selector).after(newElement);
+	 updateLastEl()
+	 
+	 
+	}
+
+      });
+
+
+    </script>
+{% endblock extra_head %}
+
+{% block banner %}
+
+     {% with occurrence.start_time as st  %}
+       {% with occurrence.end_time as et %}
+     <h2>{{st|date:"l, F jS "}}</h2>
+     <h3>{{st|date:"P"}} - {{et|date:"P"}}</h3>
+     {% with occurrence.event as event %}
+     
+      {{event.event_type.profile|capfirst}}'s Duty
+     <br/>
+     {% endwith %}
+     
+
+	{% endwith %}
+	{% endwith %}
+	<br/>
+	
+     <dl>
+       <dt>Status:</dt> <dd>{{ occurrence.get_status_display }}</dd>
+       
+       {% if occurrence.status == occurrence.COVERED %}
+         <dt>Cover Reason:</dt>
+         <dd>{{ occurrence.cover_reason|default:"None" }}</dd>	   
+       {% endif %}
+	<h3>Issues</h3>
+	<dl>
+	{% for i in occurrence.issues.all %}
+
+	<dt><a href="{{i.get_absolute_url}}">{{i.description|truncatewords:"10"}}...</a></dt>
+	  {% block issue %}
+	<dd><strong>Severity:</strong> {{ i.get_severity_display }} </dd>
+	<dd><strong>Time Discovered:</strong> {{ i.time_discovered }} </dd>
+	 <dd><strong>User Reporting:</strong> {{ i.user }} </dd>
+	 <dd><strong>Description:</strong> {{ i.description }} </dd>
+	 <dd><strong>Trouble Shooting:</strong> {{ i.attempted_troubleshooting }} </dd>
+	 <dd>
+	 {% if i.solved == 1%}
+	  <strong>Solved on {{ i.date_solved|default:"unknown date" }}</strong>
+	 {% else %}
+	  <strong>{{ i.get_solved_display }}</strong>
+	 {% endif %}
+	 </dd>
+	 {% endblock issue %}
+	 {% endfor %}
+
+         
+     </dl>
+
+     <br/>
+     
+     {% if form %}
+     <form action="" method="post">
+       {% csrf_token %}
+     <table  id="issue_forms_wrapper">
+
+         <tbody>
+              {{ form }}
+         </tbody>
+
+{{ inlineform.management_form }}
+   {% for iform in inlineform %}
+
+     {%block issueform %}
+     <tbody class="single_issue_form_wrapper">
+
+     {%if iform.non_field_errors %}  <tr>{{ iform.non_field_errors }}</tr> {%endif%}
+     {% for hidden in iform.hidden_fields %}
+       {{ hidden }}
+     {% endfor %}
+
+     <tr>
+       {{ iform.description.errors }}
+       <th><label for="{{iform.description.html_name}}">
+	 {{ iform.description.label }}
+       </label></th>
+       <td>{{ iform.description }}</td>
+
+       {{ iform.attempted_troubleshooting.errors }}
+       <th><label for="{{iform.attempted_troubleshooting.html_name}}">
+	 {{ iform.attempted_troubleshooting.label }}
+       </label></th>
+       <td>{{ iform.attempted_troubleshooting }}</td>
+     </tr>
+
+     <tr>
+       {{ iform.severity.errors }}
+       <th><label for="{{iform.severity.html_name}}">
+	 {{ iform.severity.label }}
+       </label></th>
+       <td>{{ iform.severity }}</td>
+
+       {{ iform.solved.errors }}
+       <th><label for="{{iform.solved.html_name}}">
+	 {{ iform.solved.label }}
+       </label></th>
+       <td>{{ iform.solved }}</td>
+     </tr>
+
+     </tbody> <!--end of the single issue form -->
+
+     {% endblock issueform %}
+   {% endfor %}
+
+
+
+
+ <tfoot>
+   <tr>
+     <td colspan="2"><input type="submit" value="Check In" /></td>
+   </tr>
+ </tfoot>
+</table>
+</form>
+
+
+     {% else %}
+       <span class="well">You cannot sign for this report. You are signed in as {{ user.username|capfirst }} and the time is {{ current_time|date:"l, F jS P" }}</span>
+     {% endif %}
+
+{% endblock banner %}
+
+{% block bottomrow %} {% endblock bottomrow %}

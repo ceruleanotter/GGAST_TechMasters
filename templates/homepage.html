@@ -8,29 +8,18 @@
 {% block body_class %}home{% endblock %}
 
 {% block banner %}
-    <h1>{% trans "Welcome to Pinax" %}</h1>
+    <h1>{% trans "GGAST Computer Lab" %}</h1>
     <p>
         {% blocktrans %}
-        <b>Pinax</b> is a <a href="http://djangoproject.com/">Django</a>
-        project intended to provide a starting point for websites. By
-        integrating numerous reusable Django apps to take care of the
-        things that many sites have in common, it lets you focus on what
-        makes your site different.
-        {% endblocktrans %}
-    </p>
-    
-    <h2>About Basic Project</h2>
-    <p>
-        {% blocktrans %}
-        This project takes the account_project and adds profiles and notifications.
-        It is a foundation suitable for many sites that have user accounts with
-        profiles.
+	  Welcome to the Gashora Computer Lab homepage.
         {% endblocktrans %}
     </p>
     
     {% if user.is_authenticated %}
         {% url what_next as what_next_url %}
-        <p class="what_next">{% blocktrans %}Wondering <a href="{{ what_next_url }}" class="btn primary large">What Next</a>?{% endblocktrans %}</p>
+	{% with user.get_profile as profile %}
+        <p class="what_next">{#{% blocktrans %}#}Hello {{ profile }}. You can go to your  <a href="{% url studentmonapp.views.userhome %}" class="btn primary large">homepage</a> now to sign in to your duty hours.{#{% endblocktrans %}#}</p>
+	{% endwith %}
     {% else %}
         {% url acct_login as login_url %}
         {% ifsetting ACCOUNT_OPEN_SIGNUP %}
@@ -40,4 +29,30 @@
             <p>{% blocktrans %}You can <a href="{{ login_url }}" class="btn primary large">Log In</a> to try out the site.{% endblocktrans %}</p>
         {% endifsetting %}
     {% endif %}
+    <br/>
+    Notice any problems with this site? Please contact Ms.Lyla.
 {% endblock %}
+
+{% block bottomrow %}
+  <div class="span10">
+    <h3>MONITOR CALENDAR COMING SOON</h3>
+    For now, please look at the computer lab door for the schedule.
+  </div>
+  <div class="span3">
+    
+    <h3>Top Techies</h3>
+    <ul>
+      {%for p in topProfiles%}
+	<li><a href="{{p.get_absolute_url}}">{{p}}</a></li>
+	{%endfor%}
+</ul>
+<h3>Tech Masters</h3>
+
+<ul>
+      {% for profile in profiles %}
+	<li><a href="{{profile.get_absolute_url}}">{{profile}}</a></li>
+      {% endfor %}
+</ul>
+    
+  </div>
+{% endblock bottomrow %}
